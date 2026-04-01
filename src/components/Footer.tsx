@@ -35,7 +35,7 @@ const ShareLink = styled.a`
 export function Footer() {
   return (
     <FooterBar>
-      <ShareLink href="/share">Share with your partner</ShareLink>
+      <ShareLink href="/share">Share with partner</ShareLink>
       <FooterLink href="/privacy">Privacy Policy</FooterLink>
       <FooterLink href="/terms">Terms of Service</FooterLink>
     </FooterBar>
