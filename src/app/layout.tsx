@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { StyledComponentsRegistry } from "@/lib/StyledComponentsRegistry";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -22,8 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={instrumentSerif.variable}>
+      <head>
+        <meta name="referrer" content="no-referrer" />
+      </head>
       <body>
-        <Providers>{children}</Providers>
+        <StyledComponentsRegistry>
+          <Providers>{children}</Providers>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

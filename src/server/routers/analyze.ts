@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
-import { anthropic } from "@ai-sdk/anthropic";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { generateObject } from "ai";
+import { decryptApiKey } from "../crypto";
 
 const analysisSchema = z.object({
   tryingToCommunicate: z.string().describe("What she/he is trying to communicate"),
@@ -21,11 +22,19 @@ export const analyzeRouter = router({
       z.object({
         message: z.string().min(1),
         pronoun: z.enum(["she", "he"]),
+        encryptedKey: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
+      let apiKey: string | undefined;
+      if (input.encryptedKey) {
+        apiKey = decryptApiKey(input.encryptedKey);
+      }
+
+      const provider = createAnthropic({ apiKey });
+
       const { object } = await generateObject({
-        model: anthropic("claude-sonnet-4-20250514"),
+        model: provider("claude-sonnet-4-20250514"),
         schema: analysisSchema,
         prompt: `You are a relationship communication expert. Someone received the following message from their partner (${input.pronoun === "she" ? "her" : "him"}):
 

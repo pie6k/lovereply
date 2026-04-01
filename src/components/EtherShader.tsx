@@ -8,6 +8,7 @@ const Canvas = styled.canvas`
   height: 260px;
   border-radius: 16px;
   margin-bottom: 32px;
+  background: #000;
 `;
 
 const VERTEX_SHADER = `
@@ -64,8 +65,15 @@ export function EtherShader() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", {
+      alpha: false,
+      preserveDrawingBuffer: true,
+      powerPreference: "low-power",
+    });
     if (!gl) return;
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
     const compile = (type: number, src: string) => {
       const s = gl.createShader(type)!;
@@ -106,6 +114,8 @@ export function EtherShader() {
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
+        gl.viewport(0, 0, w, h);
+        gl.clear(gl.COLOR_BUFFER_BIT);
       }
 
       gl.viewport(0, 0, w, h);

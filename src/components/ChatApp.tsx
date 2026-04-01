@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import styled, { keyframes } from "styled-components";
 import { trpc } from "@/lib/trpc";
 import type { Analysis } from "@/server/routers/analyze";
 import { EtherShader } from "./EtherShader";
 
 type Pronoun = "she" | "he";
+
+const STORAGE_KEY = "lovereply_ek";
 
 const Container = styled.div`
   flex: 1;
@@ -34,25 +37,26 @@ const PronounToggle = styled.button<{ $active: boolean }>`
   background: ${(p) =>
     p.$active ? "rgba(255, 255, 255, 0.1)" : "transparent"};
   border: none;
-  color: ${(p) =>
-    p.$active ? "#fff" : "rgba(255, 255, 255, 0.3)"};
-  padding: 4px 12px;
+  color: ${(p) => (p.$active ? "#e8a0a0" : "rgba(255, 255, 255, 0.3)")};
+  padding: 2px 10px;
   border-radius: 6px;
-  font-size: 22px;
+  font-size: inherit;
+  line-height: 1;
+  vertical-align: baseline;
   cursor: pointer;
   transition: all 0.2s;
   font-family: var(--font-instrument-serif), serif;
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
+    color: ${(p) => (p.$active ? "#e8a0a0" : "rgba(255, 255, 255, 0.7)")};
   }
 `;
 
 const PronounRow = styled.span`
   display: inline-flex;
   gap: 4px;
-  vertical-align: middle;
+  vertical-align: baseline;
 `;
 
 const TextArea = styled.textarea`
@@ -79,7 +83,29 @@ const TextArea = styled.textarea`
   }
 `;
 
+const Input = styled.input`
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  padding: 14px 16px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+`;
+
 const SubmitButton = styled.button`
+  width: 100%;
   margin-top: 16px;
   padding: 12px 32px;
   background: #fff;
@@ -202,15 +228,67 @@ const StartOverButton = styled.button`
   }
 `;
 
+const KeySetupCard = styled.div`
+  width: 100%;
+  margin-top: 8px;
+`;
+
+const KeyLabel = styled.p`
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+  line-height: 1.5;
+`;
+
+const KeySavedNote = styled.p`
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 12px;
+  text-align: center;
+`;
+
 interface ChatAppProps {
   fixedPronoun?: Pronoun;
 }
 
 export function ChatApp({ fixedPronoun }: ChatAppProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [pronoun, setPronoun] = useState<Pronoun>(fixedPronoun ?? "she");
   const [message, setMessage] = useState("");
   const [result, setResult] = useState<Analysis | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
+  const [showKeySetup, setShowKeySetup] = useState(false);
+  const [rawKeyInput, setRawKeyInput] = useState("");
+
+  const encryptMutation = trpc.apiKey.encrypt.useMutation();
+
+  // Load encrypted key from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) setEncryptedKey(stored);
+  }, []);
+
+  // Capture raw key from URL ?key= param, encrypt it, store it
+  useEffect(() => {
+    const rawKey = searchParams.get("key");
+    if (!rawKey || !rawKey.startsWith("sk-ant-")) return;
+
+    // Clean URL immediately
+    router.replace("/");
+
+    encryptMutation.mutate(
+      { key: rawKey },
+      {
+        onSuccess: (data) => {
+          localStorage.setItem(STORAGE_KEY, data.encryptedKey);
+          setEncryptedKey(data.encryptedKey);
+        },
+      }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const analyzeMutation = trpc.analyze.analyze.useMutation({
     onSuccess: (data) => {
@@ -220,7 +298,40 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
 
   const handleSubmit = () => {
     if (!message.trim()) return;
-    analyzeMutation.mutate({ message: message.trim(), pronoun });
+    if (!encryptedKey) {
+      setShowKeySetup(true);
+      return;
+    }
+    analyzeMutation.mutate({
+      message: message.trim(),
+      pronoun,
+      encryptedKey,
+    });
+  };
+
+  const handleSaveKey = () => {
+    const key = rawKeyInput.trim();
+    if (!key.startsWith("sk-ant-")) return;
+
+    encryptMutation.mutate(
+      { key },
+      {
+        onSuccess: (data) => {
+          localStorage.setItem(STORAGE_KEY, data.encryptedKey);
+          setEncryptedKey(data.encryptedKey);
+          setShowKeySetup(false);
+          setRawKeyInput("");
+          // Auto-submit after key is saved
+          if (message.trim()) {
+            analyzeMutation.mutate({
+              message: message.trim(),
+              pronoun,
+              encryptedKey: data.encryptedKey,
+            });
+          }
+        },
+      }
+    );
   };
 
   const handleCopy = async (text: string, index: number) => {
@@ -232,6 +343,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
   const handleStartOver = () => {
     setMessage("");
     setResult(null);
+    setShowKeySetup(false);
     analyzeMutation.reset();
   };
 
@@ -270,12 +382,50 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
               if (e.key === "Enter" && e.metaKey) handleSubmit();
             }}
           />
-          <SubmitButton
-            onClick={handleSubmit}
-            disabled={!message.trim()}
-          >
-            Help me reply
-          </SubmitButton>
+
+          {showKeySetup ? (
+            <KeySetupCard>
+              <Divider />
+              <KeyLabel>
+                Enter your Anthropic API key to continue. Your key is encrypted
+                and never stored in plain text.
+              </KeyLabel>
+              <Input
+                type="text"
+                autoComplete="off"
+                data-1p-ignore
+                data-lpignore="true"
+                data-form-type="other"
+                placeholder="sk-ant-..."
+                value={rawKeyInput}
+                onChange={(e) => setRawKeyInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveKey();
+                }}
+              />
+              <SubmitButton
+                onClick={handleSaveKey}
+                disabled={
+                  !rawKeyInput.trim().startsWith("sk-ant-") ||
+                  encryptMutation.isPending
+                }
+              >
+                {encryptMutation.isPending ? "Saving..." : "Save & get loving reply"}
+              </SubmitButton>
+            </KeySetupCard>
+          ) : (
+            <>
+              <SubmitButton
+                onClick={handleSubmit}
+                disabled={!message.trim()}
+              >
+                Get loving reply
+              </SubmitButton>
+              {encryptedKey && (
+                <KeySavedNote>Using your saved API key</KeySavedNote>
+              )}
+            </>
+          )}
         </>
       )}
 
