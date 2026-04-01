@@ -3,6 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Footer } from "@/components/Footer";
+import { trpc } from "@/lib/trpc";
 
 const PageWrapper = styled.div`
   display: flex;
@@ -61,6 +62,31 @@ const Input = styled.input`
   }
 `;
 
+const GenerateButton = styled.button`
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 32px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 const LinkBox = styled.div`
   width: 100%;
   margin-top: 20px;
@@ -109,11 +135,22 @@ const Label = styled.label`
 
 export default function SharePage() {
   const [key, setKey] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = key.trim()
-    ? `https://lovereply.ai/${key.trim()}`
-    : "";
+  const encryptMutation = trpc.apiKey.encrypt.useMutation({
+    onSuccess: (data) => {
+      setShareUrl(
+        `https://lovereply.ai/${encodeURIComponent(data.encryptedKey)}`
+      );
+    },
+  });
+
+  const handleGenerate = () => {
+    const trimmed = key.trim();
+    if (!trimmed.startsWith("sk-ant-")) return;
+    encryptMutation.mutate({ key: trimmed });
+  };
 
   const handleCopy = async () => {
     if (!shareUrl) return;
@@ -127,21 +164,35 @@ export default function SharePage() {
       <Container>
         <Title>Share with your partner</Title>
         <Subtitle>
-          Paste your key below to generate a link. Send it to your
-          partner and they can start using LoveReply right away — no
-          setup needed on their end.
+          Paste your Anthropic API key below to generate a secure link. Send it
+          to your partner and they can start using LoveReply right away — no
+          setup needed on their end. Your key is encrypted before being included
+          in the link.
         </Subtitle>
-        <Label>Your key</Label>
+        <Label>Your Anthropic API key</Label>
         <Input
           type="text"
           autoComplete="off"
           data-1p-ignore
           data-lpignore="true"
           data-form-type="other"
-          placeholder="Paste your key here..."
+          placeholder="sk-ant-..."
           value={key}
-          onChange={(e) => setKey(e.target.value)}
+          onChange={(e) => {
+            setKey(e.target.value);
+            setShareUrl("");
+          }}
         />
+        {!shareUrl && (
+          <GenerateButton
+            onClick={handleGenerate}
+            disabled={
+              !key.trim().startsWith("sk-ant-") || encryptMutation.isPending
+            }
+          >
+            {encryptMutation.isPending ? "Generating..." : "Generate link"}
+          </GenerateButton>
+        )}
         {shareUrl && (
           <LinkBox>
             <LinkText>{shareUrl}</LinkText>

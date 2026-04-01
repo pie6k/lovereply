@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { trpc } from "@/lib/trpc";
-import type { Analysis } from "@/server/routers/analyze";
+import { encodeInput } from "@/lib/encode";
 import { EtherShader } from "./EtherShader";
+import { useStickyState } from "@/lib/useStickyState";
 
 type Pronoun = "she" | "he";
 
-const STORAGE_KEY = "lovereply_ek";
+export const STORAGE_KEY = "lovereply_ek";
 
 const Container = styled.div`
   flex: 1;
@@ -142,105 +143,10 @@ const SubmitButton = styled.button`
   }
 `;
 
-const pulse = keyframes`
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-`;
-
-const LoadingDots = styled.div`
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  padding: 40px 0;
-
-  span {
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    animation: ${pulse} 1.2s ease-in-out infinite;
-
-    &:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    &:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-  }
-`;
-
-const ResultsContainer = styled.div`
-  width: 100%;
-  margin-top: 32px;
-`;
-
-const InsightCard = styled.div`
-  margin-bottom: 24px;
-`;
-
-const InsightLabel = styled.div`
-  font-family: var(--font-instrument-serif), serif;
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.45);
-  margin-bottom: 6px;
-`;
-
-const InsightText = styled.p`
-  font-size: 15px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
-`;
-
 const Divider = styled.hr`
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   margin: 28px 0;
-`;
-
-const ReplyCard = styled.button`
-  width: 100%;
-  text-align: left;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 15px;
-  line-height: 1.5;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-  margin-bottom: 10px;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-`;
-
-const CopiedToast = styled.span`
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
-  margin-left: 8px;
-`;
-
-const StartOverButton = styled.button`
-  width: 100%;
-  margin-top: 24px;
-  padding: 12px 32px;
-  background: #fff;
-  color: #000;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
 `;
 
 const KeySetupCard = styled.div`
@@ -262,10 +168,8 @@ interface ChatAppProps {
 export function ChatApp({ fixedPronoun }: ChatAppProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [pronoun, setPronoun] = useState<Pronoun>(fixedPronoun ?? "she");
+  const [pronoun, setPronoun] = useStickyState<Pronoun>("lovereply_pronoun", fixedPronoun ?? "she");
   const [message, setMessage] = useState("");
-  const [result, setResult] = useState<Analysis | null>(null);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [rawKeyInput, setRawKeyInput] = useState("");
@@ -278,31 +182,21 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
     if (stored) setEncryptedKey(stored);
   }, []);
 
-  // Capture raw key from URL ?key= param, encrypt it, store it
+  // Capture encrypted key from URL ?ek= param, store it directly
   useEffect(() => {
-    const rawKey = searchParams.get("key");
-    if (!rawKey || !rawKey.startsWith("sk-ant-")) return;
+    const ek = searchParams.get("ek");
+    if (!ek) return;
 
-    // Clean URL immediately
+    localStorage.setItem(STORAGE_KEY, ek);
+    setEncryptedKey(ek);
     router.replace("/");
-
-    encryptMutation.mutate(
-      { key: rawKey },
-      {
-        onSuccess: (data) => {
-          localStorage.setItem(STORAGE_KEY, data.encryptedKey);
-          setEncryptedKey(data.encryptedKey);
-        },
-      }
-    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const analyzeMutation = trpc.analyze.analyze.useMutation({
-    onSuccess: (data) => {
-      setResult(data);
-    },
-  });
+  const navigateToReply = () => {
+    const encoded = encodeInput(pronoun, message.trim());
+    router.push(`/reply/${encoded}`);
+  };
 
   const handleSubmit = () => {
     if (!message.trim()) return;
@@ -310,11 +204,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
       setShowKeySetup(true);
       return;
     }
-    analyzeMutation.mutate({
-      message: message.trim(),
-      pronoun,
-      encryptedKey,
-    });
+    navigateToReply();
   };
 
   const handleSaveKey = () => {
@@ -329,160 +219,83 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
           setEncryptedKey(data.encryptedKey);
           setShowKeySetup(false);
           setRawKeyInput("");
-          // Auto-submit after key is saved
-          if (message.trim()) {
-            analyzeMutation.mutate({
-              message: message.trim(),
-              pronoun,
-              encryptedKey: data.encryptedKey,
-            });
-          }
+          navigateToReply();
         },
       }
     );
   };
 
-  const handleCopy = async (text: string, index: number) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
-  };
-
-  const handleStartOver = () => {
-    setMessage("");
-    setResult(null);
-    setShowKeySetup(false);
-    analyzeMutation.reset();
-  };
-
   return (
     <Container>
-      {!result && !analyzeMutation.isPending && (
-        <>
-          <EtherShader />
-          <Title>
-            What did{" "}
-            {fixedPronoun ? (
-              fixedPronoun
-            ) : (
-              <PronounRow>
-                <PronounToggle
-                  $active={pronoun === "she"}
-                  onClick={() => setPronoun("she")}
-                >
-                  she
-                </PronounToggle>
-                <PronounToggle
-                  $active={pronoun === "he"}
-                  onClick={() => setPronoun("he")}
-                >
-                  he
-                </PronounToggle>
-              </PronounRow>
-            )}{" "}
-            say?
-          </Title>
-          <TextArea
-            placeholder="Paste their message here..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+      <EtherShader />
+      <Title>
+        What did{" "}
+        {fixedPronoun ? (
+          fixedPronoun
+        ) : (
+          <PronounRow>
+            <PronounToggle
+              $active={pronoun === "she"}
+              onClick={() => setPronoun("she")}
+            >
+              she
+            </PronounToggle>
+            <PronounToggle
+              $active={pronoun === "he"}
+              onClick={() => setPronoun("he")}
+            >
+              he
+            </PronounToggle>
+          </PronounRow>
+        )}{" "}
+        say?
+      </Title>
+      <TextArea
+        placeholder="Paste their message here..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && e.metaKey) handleSubmit();
+        }}
+      />
+
+      {showKeySetup ? (
+        <KeySetupCard>
+          <Divider />
+          <KeyLabel>
+            To get started, paste the key you received from your partner or
+            get your own at anthropic.com.
+          </KeyLabel>
+          <Input
+            type="text"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
+            data-form-type="other"
+            placeholder="Paste your key here..."
+            value={rawKeyInput}
+            onChange={(e) => setRawKeyInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && e.metaKey) handleSubmit();
+              if (e.key === "Enter") handleSaveKey();
             }}
           />
-
-          {showKeySetup ? (
-            <KeySetupCard>
-              <Divider />
-              <KeyLabel>
-                To get started, paste the key you received from your partner or
-                get your own at anthropic.com.
-              </KeyLabel>
-              <Input
-                type="text"
-                autoComplete="off"
-                data-1p-ignore
-                data-lpignore="true"
-                data-form-type="other"
-                placeholder="Paste your key here..."
-                value={rawKeyInput}
-                onChange={(e) => setRawKeyInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSaveKey();
-                }}
-              />
-              <SubmitButton
-                onClick={handleSaveKey}
-                disabled={
-                  !rawKeyInput.trim().startsWith("sk-ant-") ||
-                  encryptMutation.isPending
-                }
-              >
-                {encryptMutation.isPending ? "Setting up..." : "Continue"}
-              </SubmitButton>
-            </KeySetupCard>
-          ) : (
-            <>
-              <SubmitButton
-                onClick={handleSubmit}
-                disabled={!message.trim()}
-              >
-                Get loving reply
-              </SubmitButton>
-            </>
-          )}
-        </>
-      )}
-
-      {analyzeMutation.isPending && (
-        <LoadingDots>
-          <span />
-          <span />
-          <span />
-        </LoadingDots>
-      )}
-
-      {result && (
-        <ResultsContainer>
-          <InsightCard>
-            <InsightLabel>
-              What {pronoun} is trying to communicate
-            </InsightLabel>
-            <InsightText>{result.tryingToCommunicate}</InsightText>
-          </InsightCard>
-
-          <InsightCard>
-            <InsightLabel>What {pronoun} needs</InsightLabel>
-            <InsightText>{result.needs}</InsightText>
-          </InsightCard>
-
-          <InsightCard>
-            <InsightLabel>What to avoid</InsightLabel>
-            <InsightText>{result.whatToAvoid}</InsightText>
-          </InsightCard>
-
-          <Divider />
-
-          <InsightLabel style={{ marginBottom: 12 }}>
-            Suggested replies
-          </InsightLabel>
-          {result.replies.map((reply, i) => (
-            <ReplyCard key={i} onClick={() => handleCopy(reply, i)}>
-              {reply}
-              {copiedIndex === i && <CopiedToast>Copied!</CopiedToast>}
-            </ReplyCard>
-          ))}
-
-          <StartOverButton onClick={handleStartOver}>
-            Start over
-          </StartOverButton>
-        </ResultsContainer>
-      )}
-
-      {analyzeMutation.isError && (
-        <InsightText style={{ color: "rgba(255,100,100,0.8)", marginTop: 20 }}>
-          Something went wrong. Please try again.
-        </InsightText>
+          <SubmitButton
+            onClick={handleSaveKey}
+            disabled={
+              !rawKeyInput.trim().startsWith("sk-ant-") ||
+              encryptMutation.isPending
+            }
+          >
+            {encryptMutation.isPending ? "Setting up..." : "Continue"}
+          </SubmitButton>
+        </KeySetupCard>
+      ) : (
+        <SubmitButton
+          onClick={handleSubmit}
+          disabled={!message.trim()}
+        >
+          Get loving reply
+        </SubmitButton>
       )}
     </Container>
   );
