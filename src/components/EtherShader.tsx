@@ -9,6 +9,11 @@ const Canvas = styled.canvas`
   border-radius: 16px;
   margin-bottom: 32px;
   background: #000;
+
+  @media (max-height: 700px) {
+    height: 150px;
+    margin-bottom: 16px;
+  }
 `;
 
 const VERTEX_SHADER = `

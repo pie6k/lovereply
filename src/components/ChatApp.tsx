@@ -21,6 +21,10 @@ const Container = styled.div`
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
+
+  @media (max-height: 700px) {
+    padding: 16px 20px;
+  }
 `;
 
 const Title = styled.h1`
@@ -29,6 +33,11 @@ const Title = styled.h1`
   font-weight: 400;
   color: #fff;
   margin-bottom: 32px;
+
+  @media (max-height: 700px) {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
   text-align: center;
   letter-spacing: -0.02em;
 `;
@@ -63,6 +72,10 @@ const TextArea = styled.textarea`
   width: 100%;
   min-height: 120px;
   background: rgba(255, 255, 255, 0.04);
+
+  @media (max-height: 700px) {
+    min-height: 80px;
+  }
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: #fff;
@@ -212,19 +225,21 @@ const CopiedToast = styled.span`
 `;
 
 const StartOverButton = styled.button`
+  width: 100%;
   margin-top: 24px;
-  padding: 10px 24px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 12px 32px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.25);
-    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.9;
+    transform: translateY(-1px);
   }
 `;
 
@@ -238,13 +253,6 @@ const KeyLabel = styled.p`
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 12px;
   line-height: 1.5;
-`;
-
-const KeySavedNote = styled.p`
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.3);
-  margin-top: 12px;
-  text-align: center;
 `;
 
 interface ChatAppProps {
@@ -387,8 +395,8 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
             <KeySetupCard>
               <Divider />
               <KeyLabel>
-                Enter your Anthropic API key to continue. Your key is encrypted
-                and never stored in plain text.
+                To get started, paste the key you received from your partner or
+                get your own at anthropic.com.
               </KeyLabel>
               <Input
                 type="text"
@@ -396,7 +404,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
                 data-1p-ignore
                 data-lpignore="true"
                 data-form-type="other"
-                placeholder="sk-ant-..."
+                placeholder="Paste your key here..."
                 value={rawKeyInput}
                 onChange={(e) => setRawKeyInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -410,7 +418,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
                   encryptMutation.isPending
                 }
               >
-                {encryptMutation.isPending ? "Saving..." : "Save & get loving reply"}
+                {encryptMutation.isPending ? "Setting up..." : "Continue"}
               </SubmitButton>
             </KeySetupCard>
           ) : (
@@ -421,9 +429,6 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
               >
                 Get loving reply
               </SubmitButton>
-              {encryptedKey && (
-                <KeySavedNote>Using your saved API key</KeySavedNote>
-              )}
             </>
           )}
         </>
