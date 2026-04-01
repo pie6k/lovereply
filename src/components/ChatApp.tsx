@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import { trpc } from "@/lib/trpc";
 import { encodeInput } from "@/lib/encode";
 import { EtherShader } from "./EtherShader";
@@ -118,7 +118,15 @@ const Input = styled.input`
   }
 `;
 
-const SubmitButton = styled.button`
+const wiggle = keyframes`
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+`;
+
+const SubmitButton = styled.button<{ $wiggle?: boolean }>`
   width: 100%;
   margin-top: 16px;
   padding: 12px 32px;
@@ -129,18 +137,17 @@ const SubmitButton = styled.button`
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s;
 
   &:hover {
-    opacity: 0.9;
     transform: translateY(-1px);
   }
 
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    transform: none;
-  }
+  ${(p) =>
+    p.$wiggle &&
+    css`
+      animation: ${wiggle} 0.4s ease-in-out;
+    `}
 `;
 
 const Divider = styled.hr`
@@ -173,6 +180,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
   const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [rawKeyInput, setRawKeyInput] = useState("");
+  const [wiggle, setWiggle] = useState(false);
 
   const encryptMutation = trpc.apiKey.encrypt.useMutation();
 
@@ -199,7 +207,11 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
   };
 
   const handleSubmit = () => {
-    if (!message.trim()) return;
+    if (!message.trim()) {
+      setWiggle(true);
+      setTimeout(() => setWiggle(false), 400);
+      return;
+    }
     if (!encryptedKey) {
       setShowKeySetup(true);
       return;
@@ -292,7 +304,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
       ) : (
         <SubmitButton
           onClick={handleSubmit}
-          disabled={!message.trim()}
+          $wiggle={wiggle}
         >
           Get loving reply
         </SubmitButton>

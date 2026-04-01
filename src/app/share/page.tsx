@@ -8,7 +8,7 @@ import { trpc } from "@/lib/trpc";
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100svh;
 `;
 
 const Container = styled.div`
@@ -133,6 +133,18 @@ const Label = styled.label`
   align-self: flex-start;
 `;
 
+const BackLink = styled.a`
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+  margin-bottom: 32px;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.6);
+  }
+`;
+
 export default function SharePage() {
   const [key, setKey] = useState("");
   const [shareUrl, setShareUrl] = useState("");
@@ -162,6 +174,7 @@ export default function SharePage() {
   return (
     <PageWrapper>
       <Container>
+        <BackLink href="/">&larr; Back</BackLink>
         <Title>Share with your partner</Title>
         <Subtitle>
           Paste your Anthropic API key below to generate a secure link. Send it
