@@ -11,11 +11,11 @@ const PageWrapper = styled.div`
   min-height: 100vh;
 `;
 
-export default function Home() {
+export default function ShePage() {
   return (
     <PageWrapper>
       <Header />
-      <ChatApp />
+      <ChatApp fixedPronoun="she" />
       <Footer />
     </PageWrapper>
   );
