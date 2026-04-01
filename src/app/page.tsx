@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import styled from "styled-components";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -15,7 +16,9 @@ export default function Home() {
   return (
     <PageWrapper>
       <Header />
-      <ChatApp />
+      <Suspense>
+        <ChatApp />
+      </Suspense>
       <Footer />
     </PageWrapper>
   );
