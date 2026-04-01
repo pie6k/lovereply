@@ -272,7 +272,7 @@ export default function ReplyPage({
 
   return (
     <PageWrapper>
-      <Container $top={hasAnyData || false}>
+      <Container $top={!!hasAnyData}>
         {needsKey && (
           <>
             <KeyLabel>

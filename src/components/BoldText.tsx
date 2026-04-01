@@ -9,7 +9,7 @@ const Wrapper = styled.p`
   color: rgba(255, 255, 255, 0.85);
 
   strong {
-    color: #fff;
+    color: #e8a0a0;
     font-weight: 600;
   }
 `;
