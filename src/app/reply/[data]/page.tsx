@@ -3,13 +3,14 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import styled, { keyframes } from "styled-components";
+import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { trpc } from "@/lib/trpc";
 import { decodeInput } from "@/lib/encode";
 import { Footer } from "@/components/Footer";
-import type { Analysis } from "@/server/routers/analyze";
 import { STORAGE_KEY } from "@/components/ChatApp";
 import { EtherShader } from "@/components/EtherShader";
 import { BoldText } from "@/components/BoldText";
+import { analysisSchema } from "@/app/api/analyze/route";
 
 const PageWrapper = styled.div`
   display: flex;
@@ -18,43 +19,45 @@ const PageWrapper = styled.div`
   min-height: 100svh;
 `;
 
-const Container = styled.div`
+const Container = styled.div<{ $top?: boolean }>`
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: ${(p) => (p.$top ? "flex-start" : "center")};
   padding: 40px 24px;
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
 `;
 
-const pulse = keyframes`
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+const shimmer = keyframes`
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 `;
 
-const LoadingDots = styled.div`
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  padding: 40px 0;
+const SkeletonLine = styled.div<{ $width?: string }>`
+  height: 16px;
+  width: ${(p) => p.$width ?? "100%"};
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: ${shimmer} 1.5s infinite linear;
+  margin-bottom: 8px;
+`;
 
-  span {
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    animation: ${pulse} 1.2s ease-in-out infinite;
-
-    &:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    &:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-  }
+const SkeletonCard = styled.div`
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 10px;
 `;
 
 const ResultsContainer = styled.div`
@@ -70,12 +73,6 @@ const InsightLabel = styled.div`
   font-size: 22px;
   color: #fff;
   margin-bottom: 8px;
-`;
-
-const InsightText = styled.p`
-  font-size: 15px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
 `;
 
 const Divider = styled.hr`
@@ -171,6 +168,25 @@ const KeyLabel = styled.p`
   line-height: 1.5;
 `;
 
+function ReplySkeleton() {
+  return (
+    <SkeletonCard>
+      <SkeletonLine $width="90%" />
+      <SkeletonLine $width="70%" />
+    </SkeletonCard>
+  );
+}
+
+function InsightSkeleton() {
+  return (
+    <InsightCard>
+      <SkeletonLine $width="50%" style={{ height: 20, marginBottom: 12 }} />
+      <SkeletonLine $width="95%" />
+      <SkeletonLine $width="80%" />
+    </InsightCard>
+  );
+}
+
 export default function ReplyPage({
   params,
 }: {
@@ -183,13 +199,14 @@ export default function ReplyPage({
   const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
   const [needsKey, setNeedsKey] = useState(false);
   const [rawKeyInput, setRawKeyInput] = useState("");
-  const [result, setResult] = useState<Analysis | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [started, setStarted] = useState(false);
 
   const encryptMutation = trpc.apiKey.encrypt.useMutation();
-  const analyzeMutation = trpc.analyze.analyze.useMutation({
-    onSuccess: (data) => setResult(data),
+
+  const { object, submit, isLoading, error } = useObject({
+    api: "/api/analyze",
+    schema: analysisSchema,
   });
 
   // Load key from localStorage
@@ -204,9 +221,9 @@ export default function ReplyPage({
 
   // Auto-analyze once we have key + decoded input
   useEffect(() => {
-    if (started || !encryptedKey || !decoded || analyzeMutation.isPending) return;
+    if (started || !encryptedKey || !decoded) return;
     setStarted(true);
-    analyzeMutation.mutate({
+    submit({
       message: decoded.message,
       pronoun: decoded.pronoun,
       encryptedKey,
@@ -242,18 +259,20 @@ export default function ReplyPage({
       <PageWrapper>
         <Container>
           <ErrorText>Invalid link.</ErrorText>
-          <ActionButton onClick={() => router.push("/")}>
-            Go home
-          </ActionButton>
+          <ActionButton onClick={() => router.push("/")}>Go home</ActionButton>
         </Container>
         <Footer />
       </PageWrapper>
     );
   }
 
+  const replies = object?.replies ?? [];
+  const hasAnyData = replies.length > 0 || object?.tryingToCommunicate;
+  const isComplete = !isLoading && object?.whatToAvoid;
+
   return (
     <PageWrapper>
-      <Container>
+      <Container $top={hasAnyData || false}>
         {needsKey && (
           <>
             <KeyLabel>
@@ -285,55 +304,75 @@ export default function ReplyPage({
           </>
         )}
 
-        {!needsKey && analyzeMutation.isPending && (
-          <>
-            <EtherShader />
-            <LoadingDots>
-              <span />
-              <span />
-              <span />
-            </LoadingDots>
-          </>
+        {!needsKey && !hasAnyData && isLoading && (
+          <EtherShader />
         )}
 
-        {result && (
+        {!needsKey && (hasAnyData || isLoading) && (
           <ResultsContainer>
             <InsightLabel style={{ marginBottom: 12 }}>
               Suggested replies
             </InsightLabel>
-            {result.replies.map((reply, i) => (
-              <ReplyCard key={i} onClick={() => handleCopy(reply, i)}>
-                {reply}
-                {copiedIndex === i && <CopiedToast>Copied!</CopiedToast>}
-              </ReplyCard>
-            ))}
+
+            {replies.map(
+              (reply, i) =>
+                reply && (
+                  <ReplyCard key={i} onClick={() => handleCopy(reply, i)}>
+                    {reply}
+                    {copiedIndex === i && <CopiedToast>Copied!</CopiedToast>}
+                  </ReplyCard>
+                )
+            )}
+            {isLoading && replies.filter(Boolean).length < 3 && (
+              <>
+                {Array.from({ length: 3 - replies.filter(Boolean).length }).map(
+                  (_, i) => (
+                    <ReplySkeleton key={`rs-${i}`} />
+                  )
+                )}
+              </>
+            )}
 
             <Divider />
 
-            <InsightCard>
-              <InsightLabel>
-                What {decoded.pronoun} is trying to communicate
-              </InsightLabel>
-              <BoldText>{result.tryingToCommunicate}</BoldText>
-            </InsightCard>
+            {object?.tryingToCommunicate ? (
+              <InsightCard>
+                <InsightLabel>
+                  What {decoded.pronoun} is trying to communicate
+                </InsightLabel>
+                <BoldText>{object.tryingToCommunicate}</BoldText>
+              </InsightCard>
+            ) : (
+              isLoading && <InsightSkeleton />
+            )}
 
-            <InsightCard>
-              <InsightLabel>What {decoded.pronoun} needs</InsightLabel>
-              <BoldText>{result.needs}</BoldText>
-            </InsightCard>
+            {object?.needs ? (
+              <InsightCard>
+                <InsightLabel>What {decoded.pronoun} needs</InsightLabel>
+                <BoldText>{object.needs}</BoldText>
+              </InsightCard>
+            ) : (
+              isLoading && <InsightSkeleton />
+            )}
 
-            <InsightCard>
-              <InsightLabel>What to avoid</InsightLabel>
-              <BoldText>{result.whatToAvoid}</BoldText>
-            </InsightCard>
+            {object?.whatToAvoid ? (
+              <InsightCard>
+                <InsightLabel>What to avoid</InsightLabel>
+                <BoldText>{object.whatToAvoid}</BoldText>
+              </InsightCard>
+            ) : (
+              isLoading && <InsightSkeleton />
+            )}
 
-            <ActionButton onClick={() => router.push("/")}>
-              Start over
-            </ActionButton>
+            {isComplete && (
+              <ActionButton onClick={() => router.push("/")}>
+                Start over
+              </ActionButton>
+            )}
           </ResultsContainer>
         )}
 
-        {analyzeMutation.isError && (
+        {error && (
           <>
             <ErrorText>Something went wrong. Please try again.</ErrorText>
             <ActionButton onClick={() => router.push("/")}>

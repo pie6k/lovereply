@@ -8,6 +8,18 @@ const Container = styled.div`
   padding: 60px 24px;
 `;
 
+const BackLink = styled.a`
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+  margin-bottom: 32px;
+  display: inline-block;
+  transition: color 0.2s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.6);
+  }
+`;
+
 const Title = styled.h1`
   font-family: var(--font-instrument-serif), serif;
   font-size: 32px;
@@ -34,6 +46,7 @@ const Text = styled.p`
 export default function PrivacyPage() {
   return (
     <Container>
+      <BackLink href="/">&larr; Back</BackLink>
       <Title>Privacy Policy</Title>
       <Text>Last updated: April 2026</Text>
 

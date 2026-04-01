@@ -52,6 +52,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/react@npm:^3.0.144":
+  version: 3.0.144
+  resolution: "@ai-sdk/react@npm:3.0.144"
+  dependencies:
+    "@ai-sdk/provider-utils": "npm:4.0.21"
+    ai: "npm:6.0.142"
+    swr: "npm:^2.2.5"
+    throttleit: "npm:2.1.0"
+  peerDependencies:
+    react: ^18 || ~19.0.1 || ~19.1.2 || ^19.2.1
+  checksum: 10c0/2753cc37416b92496ece6ceaf116759564ec0f530c77b92c8f9bdfda308f92e7aa8e29b96edc1b9bd49bc65cb67547d14fe86cc883efb5dc211966eadc7a8abc
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.28.6, @babel/code-frame@npm:^7.29.0":
   version: 7.29.0
   resolution: "@babel/code-frame@npm:7.29.0"
@@ -1273,7 +1287,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ai@npm:^6.0.142":
+"ai@npm:6.0.142, ai@npm:^6.0.142":
   version: 6.0.142
   resolution: "ai@npm:6.0.142"
   dependencies:
@@ -1771,6 +1785,13 @@ __metadata:
     has-property-descriptors: "npm:^1.0.0"
     object-keys: "npm:^1.1.1"
   checksum: 10c0/88a152319ffe1396ccc6ded510a3896e77efac7a1bfbaa174a7b00414a1747377e0bb525d303794a47cf30e805c2ec84e575758512c6e44a993076d29fd4e6c3
+  languageName: node
+  linkType: hard
+
+"dequal@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "dequal@npm:2.0.3"
+  checksum: 10c0/f98860cdf58b64991ae10205137c0e97d384c3a4edc7f807603887b7c4b850af1224a33d88012009f150861cbee4fa2d322c4cc04b9313bee312e47f6ecaa888
   languageName: node
   linkType: hard
 
@@ -3074,6 +3095,7 @@ __metadata:
   resolution: "lovereply@workspace:."
   dependencies:
     "@ai-sdk/anthropic": "npm:^3.0.64"
+    "@ai-sdk/react": "npm:^3.0.144"
     "@tanstack/react-query": "npm:^5.96.1"
     "@trpc/client": "npm:^11.16.0"
     "@trpc/next": "npm:^11.16.0"
@@ -4092,6 +4114,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"swr@npm:^2.2.5":
+  version: 2.4.1
+  resolution: "swr@npm:2.4.1"
+  dependencies:
+    dequal: "npm:^2.0.3"
+    use-sync-external-store: "npm:^1.6.0"
+  peerDependencies:
+    react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/34d61fb4653ac8875ad24e7c6da37e210b0e90fce0815dc59f013b7554a0bd267e79aac0f8ae5fbf04992e2a1815ee3da581b0dab3ed6ac4c2ce0e82b351320f
+  languageName: node
+  linkType: hard
+
+"throttleit@npm:2.1.0":
+  version: 2.1.0
+  resolution: "throttleit@npm:2.1.0"
+  checksum: 10c0/1696ae849522cea6ba4f4f3beac1f6655d335e51b42d99215e196a718adced0069e48deaaf77f7e89f526ab31de5b5c91016027da182438e6f9280be2f3d5265
+  languageName: node
+  linkType: hard
+
 "tinyglobby@npm:^0.2.13, tinyglobby@npm:^0.2.15":
   version: 0.2.15
   resolution: "tinyglobby@npm:0.2.15"
@@ -4342,6 +4383,15 @@ __metadata:
   dependencies:
     punycode: "npm:^2.1.0"
   checksum: 10c0/4ef57b45aa820d7ac6496e9208559986c665e49447cb072744c13b66925a362d96dd5a46c4530a6b8e203e5db5fe849369444440cb22ecfc26c679359e5dfa3c
+  languageName: node
+  linkType: hard
+
+"use-sync-external-store@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "use-sync-external-store@npm:1.6.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/35e1179f872a53227bdf8a827f7911da4c37c0f4091c29b76b1e32473d1670ebe7bcd880b808b7549ba9a5605c233350f800ffab963ee4a4ee346ee983b6019b
   languageName: node
   linkType: hard
 
