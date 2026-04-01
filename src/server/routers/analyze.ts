@@ -46,7 +46,9 @@ Analyze this message and provide:
 3. What to avoid when replying (common mistakes that would make things worse)
 4. 3 suggested replies that are supportive, loving, and emotionally intelligent. Keep them natural and conversational — not robotic or overly formal.
 
-IMPORTANT: Detect the language of the pasted message. Your ENTIRE response — all analysis, tips, and suggested replies — MUST be in that same language. If the message is in Polish, respond in Polish. If in Spanish, respond in Spanish. Match the language exactly.`,
+IMPORTANT: Detect the language of the pasted message. Your ENTIRE response — all analysis, tips, and suggested replies — MUST be in that same language. If the message is in Polish, respond in Polish. If in Spanish, respond in Spanish. Match the language exactly.
+
+FORMATTING: In the analysis fields (tryingToCommunicate, needs, whatToAvoid), wrap the most important words or short phrases in **bold** using markdown syntax. Use bold sparingly — only 2-4 key words/phrases per field to highlight what matters most. Do NOT use bold in the reply suggestions.`,
       });
 
       return object;

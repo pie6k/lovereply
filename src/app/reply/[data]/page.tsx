@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import type { Analysis } from "@/server/routers/analyze";
 import { STORAGE_KEY } from "@/components/ChatApp";
 import { EtherShader } from "@/components/EtherShader";
+import { BoldText } from "@/components/BoldText";
 
 const PageWrapper = styled.div`
   display: flex;
@@ -313,17 +314,17 @@ export default function ReplyPage({
               <InsightLabel>
                 What {decoded.pronoun} is trying to communicate
               </InsightLabel>
-              <InsightText>{result.tryingToCommunicate}</InsightText>
+              <BoldText>{result.tryingToCommunicate}</BoldText>
             </InsightCard>
 
             <InsightCard>
               <InsightLabel>What {decoded.pronoun} needs</InsightLabel>
-              <InsightText>{result.needs}</InsightText>
+              <BoldText>{result.needs}</BoldText>
             </InsightCard>
 
             <InsightCard>
               <InsightLabel>What to avoid</InsightLabel>
-              <InsightText>{result.whatToAvoid}</InsightText>
+              <BoldText>{result.whatToAvoid}</BoldText>
             </InsightCard>
 
             <ActionButton onClick={() => router.push("/")}>
