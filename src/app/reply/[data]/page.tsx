@@ -82,31 +82,28 @@ const Divider = styled.hr`
   margin: 28px 0;
 `;
 
-const ReplyCard = styled.button`
+const ReplyCard = styled.div`
   width: 100%;
   text-align: left;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 16px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 15px;
   line-height: 1.5;
-  cursor: pointer;
-  transition: all 0.2s;
   font-family: inherit;
   margin-bottom: 10px;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
+  user-select: none;
+  -webkit-user-select: none;
 `;
 
-const CopiedToast = styled.span`
-  font-size: 12px;
+const ExamplesNote = styled.p`
+  font-size: 14px;
+  line-height: 1.6;
   color: rgba(255, 255, 255, 0.4);
-  margin-left: 8px;
+  margin-bottom: 16px;
+  font-style: italic;
 `;
 
 const ActionButton = styled.button`
@@ -200,7 +197,6 @@ export default function ReplyPage({
   const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
   const [needsKey, setNeedsKey] = useState(false);
   const [rawKeyInput, setRawKeyInput] = useState("");
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [started, setStarted] = useState(false);
 
   const encryptMutation = trpc.apiKey.encrypt.useMutation();
@@ -247,12 +243,6 @@ export default function ReplyPage({
         },
       }
     );
-  };
-
-  const handleCopy = async (text: string, index: number) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
   };
 
   if (!decoded) {
@@ -312,31 +302,6 @@ export default function ReplyPage({
 
         {!needsKey && (hasAnyData || isLoading) && (
           <ResultsContainer>
-            <InsightLabel style={{ marginBottom: 12 }}>
-              Suggested replies
-            </InsightLabel>
-
-            {replies.map(
-              (reply, i) =>
-                reply && (
-                  <ReplyCard key={i} onClick={() => handleCopy(reply, i)}>
-                    {reply}
-                    {copiedIndex === i && <CopiedToast>Copied!</CopiedToast>}
-                  </ReplyCard>
-                )
-            )}
-            {isLoading && replies.filter(Boolean).length < 3 && (
-              <>
-                {Array.from({ length: 3 - replies.filter(Boolean).length }).map(
-                  (_, i) => (
-                    <ReplySkeleton key={`rs-${i}`} />
-                  )
-                )}
-              </>
-            )}
-
-            <Divider />
-
             {object?.tryingToCommunicate ? (
               <InsightCard>
                 <InsightLabel>
@@ -364,6 +329,34 @@ export default function ReplyPage({
               </InsightCard>
             ) : (
               isLoading && <InsightSkeleton />
+            )}
+
+            <Divider />
+
+            <InsightLabel style={{ marginBottom: 8 }}>
+              Example replies
+            </InsightLabel>
+            <ExamplesNote>
+              Use these as inspiration, but write your reply in your own words —
+              it&apos;ll mean so much more coming from you.
+            </ExamplesNote>
+
+            {replies.map(
+              (reply, i) =>
+                reply && (
+                  <ReplyCard key={i}>
+                    {reply}
+                  </ReplyCard>
+                )
+            )}
+            {isLoading && replies.filter(Boolean).length < 3 && (
+              <>
+                {Array.from({ length: 3 - replies.filter(Boolean).length }).map(
+                  (_, i) => (
+                    <ReplySkeleton key={`rs-${i}`} />
+                  )
+                )}
+              </>
             )}
 
             {isComplete && (

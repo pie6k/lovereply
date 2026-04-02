@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import styled, { keyframes, css } from "styled-components";
-import { trpc } from "@/lib/trpc";
-import { encodeInput } from "@/lib/encode";
+import styled, { css, keyframes } from "styled-components";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { EtherShader } from "./EtherShader";
+import { encodeInput } from "@/lib/encode";
+import { trpc } from "@/lib/trpc";
 import { useStickyState } from "@/lib/useStickyState";
 
 type Pronoun = "she" | "he";
@@ -176,6 +177,18 @@ const PrivacyNote = styled.p`
   line-height: 1.5;
 `;
 
+const WhyLink = styled.a`
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20px;
+  transition: color 0.2s;
+  text-align: center;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.8);
+  }
+`;
+
 interface ChatAppProps {
   fixedPronoun?: Pronoun;
 }
@@ -270,6 +283,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
         )}{" "}
         say?
       </Title>
+      <WhyLink href="/why">Why use this?</WhyLink>
       <TextArea
         placeholder="Paste their message here..."
         value={message}
@@ -287,7 +301,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
           <Divider />
           <KeyLabel>
             To get started, paste the key you received from your partner or
-            get your own at anthropic.com.
+            get your own at <a href="https://anthropic.com" target="_blank" rel="noopener noreferrer">anthropic.com</a>.
           </KeyLabel>
           <Input
             type="text"
@@ -318,7 +332,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
             onClick={handleSubmit}
             $wiggle={wiggle}
           >
-            Get loving reply
+            Help me open my mind
           </SubmitButton>
           <PrivacyNote>
             Your messages are never stored. Uses your own Anthropic key.

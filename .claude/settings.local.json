@@ -4,7 +4,9 @@
       "Bash(corepack enable:*)",
       "Bash(corepack prepare:*)",
       "Bash(npx create-next-app@latest . --typescript --eslint --src-dir --app --no-tailwind --import-alias \"@/*\" --use-yarn)",
-      "Bash(curl -s http://localhost:3000)"
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(npx tsc:*)",
+      "Bash(curl -s http://localhost:3002)"
     ]
   }
 }
