@@ -332,7 +332,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
             onClick={handleSubmit}
             $wiggle={wiggle}
           >
-            Help me open my mind
+            Help me see their side
           </SubmitButton>
           <PrivacyNote>
             Your messages are never stored. Uses your own Anthropic key.
