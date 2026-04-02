@@ -30,6 +30,7 @@ export function Header() {
       <HeaderLink href="https://x.com/pie6k" target="_blank" rel="noopener">
         Follow me
       </HeaderLink>
+      <HeaderLink href="/why">Why use this?</HeaderLink>
     </HeaderBar>
   );
 }

@@ -44,11 +44,11 @@ const Title = styled.h1`
   font-size: 36px;
   font-weight: 400;
   color: #fff;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 
   @media (max-height: 700px) {
     font-size: 28px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   text-align: center;
   letter-spacing: -0.02em;
@@ -139,7 +139,7 @@ const wiggle = keyframes`
 
 const SubmitButton = styled.button<{ $wiggle?: boolean }>`
   width: 100%;
-  margin-top: 16px;
+  margin-top: 12px;
   padding: 12px 32px;
   background: #fff;
   color: #000;
@@ -164,7 +164,7 @@ const SubmitButton = styled.button<{ $wiggle?: boolean }>`
 const Divider = styled.hr`
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  margin: 28px 0;
+  margin: 22px 0;
 `;
 
 const KeySetupCard = styled.div`
@@ -183,7 +183,7 @@ const PrivacyNote = styled.p`
   font-size: 12px;
   color: rgba(255, 255, 255, 0.25);
   text-align: center;
-  margin-top: 14px;
+  margin-top: 10px;
   line-height: 1.5;
 `;
 
@@ -211,18 +211,6 @@ const ContinueButton = styled.button`
   &:hover {
     opacity: 0.9;
     transform: translateY(-1px);
-  }
-`;
-
-const WhyLink = styled.a`
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 20px;
-  transition: color 0.2s;
-  text-align: center;
-
-  &:hover {
-    color: rgba(255, 255, 255, 0.8);
   }
 `;
 
@@ -342,7 +330,6 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
         )}{" "}
         say?
       </Title>
-      <WhyLink href="/why">Why use this?</WhyLink>
       <TextArea
         placeholder="Paste their message here..."
         value={message}
