@@ -9,9 +9,8 @@ import { ChatApp } from "@/components/ChatApp";
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100svh;
 `;
 
 export default function Home() {

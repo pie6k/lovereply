@@ -23,11 +23,12 @@ const fadeIn = keyframes`
 
 const Container = styled.div<{ $animate?: boolean }>`
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 24px;
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
@@ -36,10 +37,6 @@ const Container = styled.div<{ $animate?: boolean }>`
     css`
       animation: ${fadeIn} 0.4s ease-out;
     `}
-
-  @media (max-height: 700px) {
-    padding: 16px 20px;
-  }
 `;
 
 const Title = styled.h1`
