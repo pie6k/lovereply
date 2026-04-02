@@ -22,8 +22,8 @@ export default function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Skip known routes, nested paths, and static files
-  if (segment.includes("/") || segment.includes(".") || KNOWN_ROUTES.has(segment)) {
+  // Skip known routes, nested paths, static files, and Next.js generated routes
+  if (segment.includes("/") || segment.includes(".") || segment.startsWith("opengraph-image") || segment.startsWith("twitter-image") || segment.startsWith("icon") || KNOWN_ROUTES.has(segment)) {
     return NextResponse.next();
   }
 
