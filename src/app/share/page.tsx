@@ -181,7 +181,8 @@ export default function SharePage() {
           Paste your Anthropic API key below to generate a secure link. Send it
           to your partner and they can start using LoveReply right away — no
           setup needed on their end. Your key is encrypted before being included
-          in the link.
+          in the link. We never store your key on our servers — it is only ever
+          kept in your browser&apos;s local storage.
         </Subtitle>
         <Label>Your Anthropic API key</Label>
         <Input

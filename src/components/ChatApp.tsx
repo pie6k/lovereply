@@ -168,6 +168,14 @@ const KeyLabel = styled.p`
   line-height: 1.5;
 `;
 
+const PrivacyNote = styled.p`
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.25);
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.5;
+`;
+
 interface ChatAppProps {
   fixedPronoun?: Pronoun;
 }
@@ -305,12 +313,18 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
           </SubmitButton>
         </KeySetupCard>
       ) : (
-        <SubmitButton
-          onClick={handleSubmit}
-          $wiggle={wiggle}
-        >
-          Get loving reply
-        </SubmitButton>
+        <>
+          <SubmitButton
+            onClick={handleSubmit}
+            $wiggle={wiggle}
+          >
+            Get loving reply
+          </SubmitButton>
+          <PrivacyNote>
+            Your messages are never stored. Uses your own Anthropic key.
+            We only proxy to Claude — nothing is saved.
+          </PrivacyNote>
+        </>
       )}
     </Container>
   );
