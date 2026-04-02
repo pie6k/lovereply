@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LoveReply
 
-## Getting Started
+Understand what your partner is really saying and reply with love.
 
-First, run the development server:
+Paste a message from your partner and get back context that helps you reply in a supportive and loving way — what they're trying to communicate, what they need, what to avoid, and 3 suggested replies.
+
+**Live at [lovereply.ai](https://lovereply.ai)**
+
+## How it works
+
+1. Paste a message from your partner
+2. Get AI-powered analysis: what they mean, what they need, what to avoid
+3. Pick from 3 suggested loving replies (click to copy)
+
+Responses stream in progressively — reply suggestions appear first, then the deeper analysis.
+
+## Sharing with your partner
+
+Visit `/share` to generate an encrypted link. Your partner opens it and can use LoveReply immediately — no setup needed on their end. Raw API keys never appear in shareable links.
+
+## Routes
+
+- `/` — main app with she/he toggle
+- `/she`, `/he` — pronoun-specific versions
+- `/reply/[encoded]` — shareable result page (re-generates on each visit)
+- `/share` — generate a link for your partner
+- `/privacy`, `/terms` — legal pages
+
+## Tech stack
+
+- **Next.js 16** (App Router) + **TypeScript**
+- **styled-components** for styling (SSR-compatible)
+- **tRPC** + **Zod** for type-safe API calls
+- **Vercel AI SDK** with `streamObject` for progressive streaming
+- **Anthropic Claude** (Sonnet) for analysis
+- **AES-256-GCM** encryption for API key handling
+- WebGL shader animation (based on [Ether by nimitz](https://www.shadertoy.com/view/MsjSW3))
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+corepack enable
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+ANTHROPIC_API_KEY=sk-ant-...
+ENCRYPTION_SECRET=<64-char hex string>
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Generate an encryption secret:
 
-## Learn More
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run the dev server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+yarn dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy to Vercel
 
-## Deploy on Vercel
+Set these environment variables in your Vercel project:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `ANTHROPIC_API_KEY`
+- `ENCRYPTION_SECRET`
+- `ENABLE_EXPERIMENTAL_COREPACK` = `1`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Connect the repo and deploy. That's it.
+
+## License
+
+MIT

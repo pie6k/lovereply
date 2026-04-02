@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import styled from "styled-components";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ChatApp } from "@/components/ChatApp";
 
@@ -15,6 +16,7 @@ const PageWrapper = styled.div`
 export default function ShePage() {
   return (
     <PageWrapper>
+      <Header />
       <Suspense>
         <ChatApp fixedPronoun="she" />
       </Suspense>

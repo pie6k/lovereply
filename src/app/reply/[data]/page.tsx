@@ -6,6 +6,7 @@ import styled, { keyframes } from "styled-components";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { trpc } from "@/lib/trpc";
 import { decodeInput } from "@/lib/encode";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { STORAGE_KEY } from "@/components/ChatApp";
 import { EtherShader } from "@/components/EtherShader";
@@ -257,6 +258,7 @@ export default function ReplyPage({
   if (!decoded) {
     return (
       <PageWrapper>
+        <Header />
         <Container>
           <ErrorText>Invalid link.</ErrorText>
           <ActionButton onClick={() => router.push("/")}>Go home</ActionButton>
