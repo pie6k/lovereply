@@ -16,7 +16,12 @@ type Pronoun = "she" | "he";
 
 export const STORAGE_KEY = "lovereply_ek";
 
-const Container = styled.div`
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const Container = styled.div<{ $animate?: boolean }>`
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -26,6 +31,11 @@ const Container = styled.div`
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
+  ${(p) =>
+    p.$animate &&
+    css`
+      animation: ${fadeIn} 0.4s ease-out;
+    `}
 
   @media (max-height: 700px) {
     padding: 16px 20px;
@@ -185,6 +195,7 @@ const WelcomeContainer = styled.div`
   margin: 0 auto;
   padding: 40px 24px;
   width: 100%;
+  animation: ${fadeIn} 0.4s ease-out;
 `;
 
 const ContinueButton = styled.button`
@@ -310,7 +321,7 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
   }
 
   return (
-    <Container>
+    <Container $animate>
       <EtherShader />
       <Title>
         What did{" "}
