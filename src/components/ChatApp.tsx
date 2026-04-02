@@ -5,9 +5,12 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { EtherShader } from "./EtherShader";
+import { WhyContent } from "./WhyContent";
 import { encodeInput } from "@/lib/encode";
 import { trpc } from "@/lib/trpc";
 import { useStickyState } from "@/lib/useStickyState";
+
+const SEEN_WELCOME_KEY = "lovereply_seen_welcome";
 
 type Pronoun = "she" | "he";
 
@@ -34,7 +37,7 @@ const Title = styled.h1`
   font-size: 36px;
   font-weight: 400;
   color: #fff;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 
   @media (max-height: 700px) {
     font-size: 28px;
@@ -177,6 +180,32 @@ const PrivacyNote = styled.p`
   line-height: 1.5;
 `;
 
+const WelcomeContainer = styled.div`
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  width: 100%;
+`;
+
+const ContinueButton = styled.button`
+  width: 100%;
+  margin-top: 32px;
+  padding: 14px 32px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+`;
+
 const WhyLink = styled.a`
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
@@ -202,13 +231,16 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [rawKeyInput, setRawKeyInput] = useState("");
   const [wiggle, setWiggle] = useState(false);
+  const [showWelcome, setShowWelcome] = useState<boolean | null>(null);
 
   const encryptMutation = trpc.apiKey.encrypt.useMutation();
 
-  // Load encrypted key from localStorage on mount
+  // Load encrypted key and welcome state from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) setEncryptedKey(stored);
+    const seen = localStorage.getItem(SEEN_WELCOME_KEY);
+    setShowWelcome(!seen);
   }, []);
 
   // Capture encrypted key from URL ?ek= param, store it directly
@@ -257,6 +289,25 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
       }
     );
   };
+
+  const handleDismissWelcome = () => {
+    localStorage.setItem(SEEN_WELCOME_KEY, "1");
+    setShowWelcome(false);
+  };
+
+  // Don't render until we know whether to show welcome
+  if (showWelcome === null) return null;
+
+  if (showWelcome) {
+    return (
+      <WelcomeContainer>
+        <WhyContent title="Before you start" />
+        <ContinueButton onClick={handleDismissWelcome}>
+          Continue
+        </ContinueButton>
+      </WelcomeContainer>
+    );
+  }
 
   return (
     <Container>
