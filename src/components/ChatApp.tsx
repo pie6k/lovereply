@@ -295,8 +295,8 @@ export function ChatApp({ fixedPronoun }: ChatAppProps) {
     setShowWelcome(false);
   };
 
-  // Don't render until we know whether to show welcome
-  if (showWelcome === null) return null;
+  // Don't render until we know whether to show welcome — use flex:1 to keep page height stable
+  if (showWelcome === null) return <Container />;
 
   if (showWelcome) {
     return (
