@@ -11,9 +11,9 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "LoveReply — Reply with love",
+  title: "LoveReply — See their side",
   description:
-    "Understand what your partner is really saying and reply with love.",
+    "We all have blind spots in relationships. LoveReply helps you understand what your partner is really trying to say, so you can show up with more empathy and clarity.",
 };
 
 export default function RootLayout({
